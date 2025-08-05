@@ -1,0 +1,31 @@
+{
+	"name": "lever-js",
+	"version": "0.1.0",
+	"description": "Unofficial JS SDK for Lever API",
+	"main": "index.js",
+	"type": "module",
+	"exports": {
+		".": "./dist/index.js"
+	},
+	"scripts": {
+		"build": "tsc"
+	},
+	"keywords": [
+		"lever",
+		"api",
+		"sdk",
+		"recruiting",
+		"hr"
+	],
+	"author": "Isaac Smith <isaac@torchmedia.ca> (https://torchmedia.ca/)",
+	"license": "MIT",
+	"packageManager": "pnpm@10.10.0",
+	"prettier": "@torchmedia/prettier-config",
+	"funding": "https://torchmedia.ca/#contact",
+	"homepage": "https://github.com/torchsmith/lever-js#readme",
+	"devDependencies": {
+		"@torchmedia/prettier-config": "^1.0.3",
+		"prettier": "^3.6.2",
+		"typescript": "^5.9.2"
+	}
+}
