@@ -23,11 +23,13 @@ interface Endpoint<P, Q, B, R> {
 	 */
 	call: (
 		apiKey: string,
-		data: {
-			params: P;
-			query?: Q;
-			body?: B;
-		},
+		data: (P extends null
+			? {}
+			: {
+					params: P;
+				}) &
+			(B extends null ? {} : { body?: B }) &
+			(Q extends null ? {} : { query?: Q }),
 		init?: Omit<RequestInit, 'body' | 'method'>
 	) => Promise<R>;
 }
@@ -38,31 +40,25 @@ const ROOT = 'https://api.lever.co/v1';
 /**
  * Factory to build a strongly‐typed Endpoint with Basic auth passed to `call`.
  */
-function createEndpoint<P extends Record<string, string>, Q, B, R>(
+function createEndpoint<P extends null | Record<string, string>, Q, B, R>(
 	config: Omit<Endpoint<P, Q, B, R>, 'call'>
 ): Endpoint<P, Q, B, R>['call'] {
-	const call = async (
-		apiKey: string,
-		{
-			params,
-			query,
-			body,
-		}: {
-			params: P;
-			query?: Q;
-			body?: B;
-		},
-		init: Omit<RequestInit, 'body' | 'method'> = {}
-	): Promise<R> => {
+	const call: Endpoint<P, Q, B, R>['call'] = async (
+		apiKey,
+		data,
+		init = {}
+	) => {
 		// 1. interpolate path params
 		let url = config.path;
-		for (const [key, val] of Object.entries(params)) {
+		for (const [key, val] of Object.entries(
+			'params' in data ? data.params : {}
+		)) {
 			url = url.replace(`:${key}`, encodeURIComponent(val));
 		}
 
 		// 2. build query string
 		const qs = new URLSearchParams(
-			Object.entries(query as any)
+			Object.entries('query' in data ? (data.query ?? []) : [])
 				.filter(([, v]) => v != null)
 				.map(([k, v]) => [k, String(v)])
 		).toString();
@@ -86,12 +82,16 @@ function createEndpoint<P extends Record<string, string>, Q, B, R>(
 		const res = await fetch(fullUrl, {
 			method: config.method,
 			headers: mergedHeaders,
-			...(config.method === 'GET' ? {} : { body: JSON.stringify(body) }),
+			...(config.method === 'GET' || !('body' in data)
+				? {}
+				: { body: JSON.stringify(data.body) }),
 			...init,
 		});
 
 		if (!res.ok) {
-			throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+			throw new Error(
+				`${config.method} ${fullUrl} HTTP ${res.status}: ${res.statusText}`
+			);
 		}
 		return (await res.json()) as R;
 	};
@@ -332,6 +332,30 @@ export interface Offer {
 		downloadUrl: string;
 	};
 }
+
+export interface OpportunityExpandApplication {
+	id: string;
+	type: string;
+	candidateId: string;
+	opportunityId: string;
+	posting: string;
+	postingHiringManager: any;
+	postingOwner: string;
+	name: string;
+	company: any;
+	phone: {
+		type: any;
+		value: string;
+	};
+	email: string;
+	links: Array<any>;
+	comments: string;
+	user: any;
+	customQuestions: Array<any>;
+	createdAt: number;
+	archived: any;
+	requisitionForHire: any;
+}
 export interface Opportunity {
 	id: string;
 	name: string;
@@ -363,7 +387,7 @@ export interface Opportunity {
 	sources: Array<string>;
 	origin: string;
 	sourcedBy?: string;
-	applications: Array<string>;
+	applications: Array<string> | Array<OpportunityExpandApplication>;
 	resume: any;
 	followers: Array<string>;
 	urls?: {
@@ -461,6 +485,11 @@ export interface Posting {
 	workplaceType: string;
 }
 
+export interface Stage {
+	id: string;
+	text: string;
+}
+
 export type ListResponse<T> =
 	| {
 			data: T[];
@@ -483,10 +512,14 @@ export type RetrieveApplicationParams = {
 	application: string;
 };
 export type RetrieveApplicationResponse = Response<Application>;
+
+/**
+ * @deprecated Use `retrieveOpportunity` with `expand` set to `applications`.
+ */
 export const retrieveApplication = createEndpoint<
 	RetrieveApplicationParams,
-	{},
-	{},
+	null,
+	null,
 	RetrieveApplicationResponse
 >({
 	method: 'GET',
@@ -501,7 +534,7 @@ export type ListApplicationsResponse = ListResponse<Application>;
 export const listApplications = createEndpoint<
 	ListApplicationsParams,
 	ListQuery,
-	{},
+	null,
 	ListApplicationsResponse
 >({
 	method: 'GET',
@@ -568,6 +601,26 @@ export const applyToPosting = createEndpoint<
 
 export const createApplication = applyToPosting;
 
+export type RetrievePostingParams = {
+	posting: string;
+};
+
+export type RetrievePostingQuery = {
+	distribution?: 'internal' | 'external';
+};
+
+export type RetrievePostingResponse = Response<Posting>;
+
+export const retrievePosting = createEndpoint<
+	RetrievePostingParams,
+	RetrievePostingQuery,
+	null,
+	RetrievePostingResponse
+>({
+	method: 'GET',
+	path: '/postings/:posting',
+});
+
 export type RetrieveInterviewParams = {
 	opportunity: string;
 	interview: string;
@@ -577,8 +630,8 @@ export type RetrieveInterviewResponse = Response<Interview>;
 
 export const retrieveInterview = createEndpoint<
 	RetrieveInterviewParams,
-	{},
-	{},
+	null,
+	null,
 	RetrieveInterviewResponse
 >({
 	method: 'GET',
@@ -593,7 +646,7 @@ export type ListInterviewsResponse = ListResponse<Interview>;
 export const listInterviews = createEndpoint<
 	ListInterviewsParams,
 	ListQuery,
-	{},
+	null,
 	ListInterviewsResponse
 >({
 	method: 'GET',
@@ -645,7 +698,7 @@ export type UpdateInterviewResponse = CreateInterviewResponse;
 
 export const updateInterview = createEndpoint<
 	UpdateInterviewParams,
-	{},
+	null,
 	UpdateInterviewBody,
 	UpdateInterviewResponse
 >({
@@ -662,8 +715,8 @@ export type DeleteInterviewQuery = CreateInterviewQuery;
 export const deleteInterview = createEndpoint<
 	DeleteInterviewParams,
 	DeleteInterviewQuery,
-	{},
-	{}
+	null,
+	null
 >({
 	method: 'DELETE',
 	path: '/opportunities/:opportunity/interviews/:interview',
@@ -677,8 +730,8 @@ export type RetrieveNoteResponse = Response<Note>;
 
 export const retrieveNote = createEndpoint<
 	RetrieveNoteParams,
-	{},
-	{},
+	null,
+	null,
 	RetrieveNoteResponse
 >({
 	method: 'GET',
@@ -694,7 +747,7 @@ export type ListNotesResponse = ListResponse<Note>;
 export const listNotes = createEndpoint<
 	ListNotesParams,
 	ListQuery,
-	{},
+	null,
 	ListNotesResponse
 >({
 	method: 'GET',
@@ -766,7 +819,7 @@ export type UpdateNoteResponse = CreateNoteResponse;
 
 export const updateNote = createEndpoint<
 	UpdateNoteParams,
-	{},
+	null,
 	UpdateNoteBody,
 	UpdateNoteResponse
 >({
@@ -779,7 +832,7 @@ export type DeleteNoteParams = {
 	note: string;
 };
 
-export const deleteNote = createEndpoint<DeleteNoteParams, {}, {}, {}>({
+export const deleteNote = createEndpoint<DeleteNoteParams, null, null, null>({
 	method: 'DELETE',
 	path: '/opportunities/:opportunity/notes/:note',
 });
@@ -791,8 +844,10 @@ export type RetrieveOpportunityResponse = Response<Opportunity>;
 
 export const retrieveOpportunity = createEndpoint<
 	RetrieveOpportunityParams,
-	{},
-	{},
+	{
+		expand?: string;
+	},
+	null,
 	RetrieveOpportunityResponse
 >({
 	method: 'GET',
@@ -825,9 +880,9 @@ export type ListOpportunitiesQuery = ListQuery & {
 export type ListOpportunitiesResponse = ListResponse<Opportunity>;
 
 export const listOpportunities = createEndpoint<
-	{},
+	null,
 	ListOpportunitiesQuery,
-	{},
+	null,
 	ListOpportunitiesResponse
 >({
 	method: 'GET',
@@ -840,9 +895,9 @@ export type ListDeletedOpportunitiesQuery = {
 };
 
 export const listDeletedOpportunities = createEndpoint<
-	{},
+	null,
 	ListDeletedOpportunitiesQuery,
-	{},
+	null,
 	ListOpportunitiesResponse
 >({
 	method: 'GET',
@@ -948,7 +1003,7 @@ export type CreateOpportunityBody = {
 export type CreateOpportunityResponse = Response<Opportunity>;
 
 export const createOpportunity = createEndpoint<
-	{},
+	null,
 	CreateOpportunityQuery,
 	CreateOpportunityBody,
 	CreateOpportunityResponse
@@ -967,9 +1022,9 @@ export type UpdateOpportunityStageBody = {
 
 export const updateOpportunityStage = createEndpoint<
 	UpdateOpportunityStageParams,
-	{},
+	null,
 	UpdateOpportunityStageBody,
-	{}
+	null
 >({
 	method: 'PUT',
 	path: '/opportunities/:opportunity/stage',
@@ -985,11 +1040,19 @@ export type UpdateOpportunityArchivedStateBody = {
 	requisitionId?: string;
 };
 
+/**
+ ***Update opportunity archived state**
+ * Update an Opportunity's archived state. If an Opportunity is already archived, its archive reason can be changed or if null is specified as the reason, it will be unarchived. If an Opportunity is active, it will be archived with the reason provided.
+ *
+ * The requisitionId is optional. If the provided reason maps to ‘Hired’ and a requisition is provided, the Opportunity will be marked as Hired, the active offer is removed from the requisition, and the hired count for the requisition will be incremented.
+ *
+ * If a requisition is specified and there are multiple active applications on the profile, you will receive an error. If the specific requisition is closed, you will receive an error. If there is an offer extended, it must be signed, and the offer must be associated with an application for a posting linked to the provided requisition. You can hire a candidate against a requisition without an offer.
+ */
 export const updateOpportunityArchivedState = createEndpoint<
 	UpdateOpportunityArchivedStateParams,
-	{},
+	null,
 	UpdateOpportunityArchivedStateBody,
-	{}
+	null
 >({
 	method: 'PUT',
 	path: '/opportunities/:opportunity/archived',
@@ -1005,9 +1068,9 @@ export type AddOpportunityContactLinksBody = {
 
 export const addContactLinksByOpportunity = createEndpoint<
 	AddOpportunityContactLinksParams,
-	{},
+	null,
 	AddOpportunityContactLinksBody,
-	{}
+	null
 >({
 	method: 'POST',
 	path: '/opportunities/:opportunity/addLinks',
@@ -1020,9 +1083,9 @@ export type RemoveOpportunityContactLinksBody = AddOpportunityContactLinksBody;
 
 export const removeContactLinksByOpportunity = createEndpoint<
 	RemoveOpportunityContactLinksParams,
-	{},
+	null,
 	RemoveOpportunityContactLinksBody,
-	{}
+	null
 >({
 	method: 'POST',
 	path: '/opportunities/:opportunity/removeLinks',
@@ -1038,9 +1101,9 @@ export type AddOpportunityTagsBody = {
 
 export const addOpportunityTags = createEndpoint<
 	AddOpportunityTagsParams,
-	{},
+	null,
 	AddOpportunityTagsBody,
-	{}
+	null
 >({
 	method: 'POST',
 	path: '/opportunities/:opportunity/addTags',
@@ -1052,9 +1115,9 @@ export type RemoveOpportunityTagsBody = AddOpportunityTagsBody;
 
 export const removeOpportunityTags = createEndpoint<
 	RemoveOpportunityTagsParams,
-	{},
+	null,
 	RemoveOpportunityTagsBody,
-	{}
+	null
 >({
 	method: 'POST',
 	path: '/opportunities/:opportunity/removeTags',
@@ -1070,9 +1133,9 @@ export type AddOpportunitySourcesBody = {
 
 export const addOpportunitySources = createEndpoint<
 	AddOpportunitySourcesParams,
-	{},
+	null,
 	AddOpportunitySourcesBody,
-	{}
+	null
 >({
 	method: 'POST',
 	path: '/opportunities/:opportunity/addSources',
@@ -1084,9 +1147,9 @@ export type RemoveOpportunitySourcesBody = AddOpportunitySourcesBody;
 
 export const removeOpportunitySources = createEndpoint<
 	RemoveOpportunitySourcesParams,
-	{},
+	null,
 	RemoveOpportunitySourcesBody,
-	{}
+	null
 >({
 	method: 'POST',
 	path: '/opportunities/:opportunity/removeSources',
@@ -1096,17 +1159,26 @@ export type GetStageParams = {
 	stage: string;
 };
 
-export const getStage = createEndpoint<GetStageParams, {}, {}, {}>({
+export type GetStageResponse = Response<Stage>;
+
+export const getStage = createEndpoint<
+	GetStageParams,
+	null,
+	null,
+	GetStageResponse
+>({
 	method: 'GET',
 	path: '/stages/:stage',
 });
 
-export const getStages = createEndpoint<{}, {}, {}, {}>({
+export type GetStagesResponse = ListResponse<Stage>;
+
+export const getStages = createEndpoint<null, null, null, GetStagesResponse>({
 	method: 'GET',
 	path: '/stages',
 });
 
-export const getTags = createEndpoint<{}, {}, {}, {}>({
+export const getTags = createEndpoint<null, null, null, null>({
 	method: 'GET',
 	path: '/tags',
 });
