@@ -225,6 +225,29 @@ export interface Offer {
         downloadUrl: string;
     };
 }
+export interface OpportunityExpandApplication {
+    id: string;
+    type: string;
+    candidateId: string;
+    opportunityId: string;
+    posting: string;
+    postingHiringManager: any;
+    postingOwner: string;
+    name: string;
+    company: any;
+    phone: {
+        type: any;
+        value: string;
+    };
+    email: string;
+    links: Array<any>;
+    comments: string;
+    user: any;
+    customQuestions: Array<any>;
+    createdAt: number;
+    archived: any;
+    requisitionForHire: any;
+}
 export interface Opportunity {
     id: string;
     name: string;
@@ -256,7 +279,7 @@ export interface Opportunity {
     sources: Array<string>;
     origin: string;
     sourcedBy?: string;
-    applications: Array<string>;
+    applications: Array<string> | Array<OpportunityExpandApplication>;
     resume: any;
     followers: Array<string>;
     urls?: {
@@ -353,6 +376,10 @@ export interface Posting {
     };
     workplaceType: string;
 }
+export interface Stage {
+    id: string;
+    text: string;
+}
 export type ListResponse<T> = {
     data: T[];
     hasNext: false;
@@ -374,10 +401,11 @@ export type RetrieveApplicationParams = {
     application: string;
 };
 export type RetrieveApplicationResponse = Response<Application>;
+/**
+ * @deprecated Use `retrieveOpportunity` with `expand` set to `applications`.
+ */
 export declare const retrieveApplication: (apiKey: string, data: {
     params: RetrieveApplicationParams;
-    query?: {} | undefined;
-    body?: {} | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<RetrieveApplicationResponse>;
 export type ListApplicationsParams = {
     opportunity: string;
@@ -385,8 +413,8 @@ export type ListApplicationsParams = {
 export type ListApplicationsResponse = ListResponse<Application>;
 export declare const listApplications: (apiKey: string, data: {
     params: ListApplicationsParams;
+} & {
     query?: ListQuery | undefined;
-    body?: {} | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<ListApplicationsResponse>;
 export type ApplyToPostingParams = {
     posting: string;
@@ -437,14 +465,30 @@ export type ApplyToPostingBody = {
 export type ApplyToPostingResponse = Response<Application>;
 export declare const applyToPosting: (apiKey: string, data: {
     params: ApplyToPostingParams;
-    query?: ApplyToPostingQuery | undefined;
+} & {
     body?: ApplyToPostingBody | undefined;
+} & {
+    query?: ApplyToPostingQuery | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<ApplyToPostingResponse>;
 export declare const createApplication: (apiKey: string, data: {
     params: ApplyToPostingParams;
-    query?: ApplyToPostingQuery | undefined;
+} & {
     body?: ApplyToPostingBody | undefined;
+} & {
+    query?: ApplyToPostingQuery | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<ApplyToPostingResponse>;
+export type RetrievePostingParams = {
+    posting: string;
+};
+export type RetrievePostingQuery = {
+    distribution?: 'internal' | 'external';
+};
+export type RetrievePostingResponse = Response<Posting>;
+export declare const retrievePosting: (apiKey: string, data: {
+    params: RetrievePostingParams;
+} & {
+    query?: RetrievePostingQuery | undefined;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<RetrievePostingResponse>;
 export type RetrieveInterviewParams = {
     opportunity: string;
     interview: string;
@@ -452,8 +496,6 @@ export type RetrieveInterviewParams = {
 export type RetrieveInterviewResponse = Response<Interview>;
 export declare const retrieveInterview: (apiKey: string, data: {
     params: RetrieveInterviewParams;
-    query?: {} | undefined;
-    body?: {} | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<RetrieveInterviewResponse>;
 export type ListInterviewsParams = {
     opportunity: string;
@@ -461,8 +503,8 @@ export type ListInterviewsParams = {
 export type ListInterviewsResponse = ListResponse<Interview>;
 export declare const listInterviews: (apiKey: string, data: {
     params: ListInterviewsParams;
+} & {
     query?: ListQuery | undefined;
-    body?: {} | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<ListInterviewsResponse>;
 export type CreateInterviewParams = {
     opportunity: string;
@@ -490,8 +532,10 @@ export type CreateInterviewBody = {
 export type CreateInterviewResponse = Response<Interview>;
 export declare const createInterview: (apiKey: string, data: {
     params: CreateInterviewParams;
-    query?: CreateInterviewQuery | undefined;
+} & {
     body?: CreateInterviewBody | undefined;
+} & {
+    query?: CreateInterviewQuery | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<CreateInterviewResponse>;
 export type UpdateInterviewParams = {
     opportunity: string;
@@ -502,7 +546,7 @@ export type UpdateInterviewBody = Partial<CreateInterviewBody>;
 export type UpdateInterviewResponse = CreateInterviewResponse;
 export declare const updateInterview: (apiKey: string, data: {
     params: UpdateInterviewParams;
-    query?: {} | undefined;
+} & {
     body?: Partial<CreateInterviewBody> | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<CreateInterviewResponse>;
 export type DeleteInterviewParams = {
@@ -512,9 +556,9 @@ export type DeleteInterviewParams = {
 export type DeleteInterviewQuery = CreateInterviewQuery;
 export declare const deleteInterview: (apiKey: string, data: {
     params: DeleteInterviewParams;
+} & {
     query?: CreateInterviewQuery | undefined;
-    body?: {} | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
 export type RetrieveNoteParams = {
     opportunity: string;
     note: string;
@@ -522,8 +566,6 @@ export type RetrieveNoteParams = {
 export type RetrieveNoteResponse = Response<Note>;
 export declare const retrieveNote: (apiKey: string, data: {
     params: RetrieveNoteParams;
-    query?: {} | undefined;
-    body?: {} | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<RetrieveNoteResponse>;
 export type ListNotesParams = {
     opportunity: string;
@@ -531,8 +573,8 @@ export type ListNotesParams = {
 export type ListNotesResponse = ListResponse<Note>;
 export declare const listNotes: (apiKey: string, data: {
     params: ListNotesParams;
+} & {
     query?: ListQuery | undefined;
-    body?: {} | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<ListNotesResponse>;
 export type CreateNoteParams = {
     opportunity: string;
@@ -574,8 +616,10 @@ export type CreateNoteBody = {
 export type CreateNoteResponse = Response<Note>;
 export declare const createNote: (apiKey: string, data: {
     params: CreateNoteParams;
-    query?: CreateNoteQuery | undefined;
+} & {
     body?: CreateNoteBody | undefined;
+} & {
+    query?: CreateNoteQuery | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<CreateNoteResponse>;
 export type UpdateNoteParams = {
     opportunity: string;
@@ -592,7 +636,7 @@ export type UpdateNoteBody = {
 export type UpdateNoteResponse = CreateNoteResponse;
 export declare const updateNote: (apiKey: string, data: {
     params: UpdateNoteParams;
-    query?: {} | undefined;
+} & {
     body?: UpdateNoteBody | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<CreateNoteResponse>;
 export type DeleteNoteParams = {
@@ -601,17 +645,17 @@ export type DeleteNoteParams = {
 };
 export declare const deleteNote: (apiKey: string, data: {
     params: DeleteNoteParams;
-    query?: {} | undefined;
-    body?: {} | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
 export type RetrieveOpportunityParams = {
     opportunity: string;
 };
 export type RetrieveOpportunityResponse = Response<Opportunity>;
 export declare const retrieveOpportunity: (apiKey: string, data: {
     params: RetrieveOpportunityParams;
-    query?: {} | undefined;
-    body?: {} | undefined;
+} & {
+    query?: {
+        expand?: string;
+    } | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<RetrieveOpportunityResponse>;
 export type ListOpportunitiesQuery = ListQuery & {
     include?: string;
@@ -637,18 +681,14 @@ export type ListOpportunitiesQuery = ListQuery & {
 };
 export type ListOpportunitiesResponse = ListResponse<Opportunity>;
 export declare const listOpportunities: (apiKey: string, data: {
-    params: {};
     query?: ListOpportunitiesQuery | undefined;
-    body?: {} | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<ListOpportunitiesResponse>;
 export type ListDeletedOpportunitiesQuery = {
     deleted_at_start?: number;
     deleted_at_end?: number;
 };
 export declare const listDeletedOpportunities: (apiKey: string, data: {
-    params: {};
     query?: ListDeletedOpportunitiesQuery | undefined;
-    body?: {} | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<ListOpportunitiesResponse>;
 export type CreateOpportunityQuery = {
     perform_as: string;
@@ -725,9 +765,9 @@ export type CreateOpportunityBody = {
 };
 export type CreateOpportunityResponse = Response<Opportunity>;
 export declare const createOpportunity: (apiKey: string, data: {
-    params: {};
-    query?: CreateOpportunityQuery | undefined;
     body?: CreateOpportunityBody | undefined;
+} & {
+    query?: CreateOpportunityQuery | undefined;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<CreateOpportunityResponse>;
 export type UpdateOpportunityStageParams = {
     opportunity: string;
@@ -737,9 +777,9 @@ export type UpdateOpportunityStageBody = {
 };
 export declare const updateOpportunityStage: (apiKey: string, data: {
     params: UpdateOpportunityStageParams;
-    query?: {} | undefined;
+} & {
     body?: UpdateOpportunityStageBody | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
 export type UpdateOpportunityArchivedStateParams = {
     opportunity: string;
 };
@@ -748,11 +788,19 @@ export type UpdateOpportunityArchivedStateBody = {
     cleanInterviews?: boolean;
     requisitionId?: string;
 };
+/**
+ ***Update opportunity archived state**
+ * Update an Opportunity's archived state. If an Opportunity is already archived, its archive reason can be changed or if null is specified as the reason, it will be unarchived. If an Opportunity is active, it will be archived with the reason provided.
+ *
+ * The requisitionId is optional. If the provided reason maps to ‘Hired’ and a requisition is provided, the Opportunity will be marked as Hired, the active offer is removed from the requisition, and the hired count for the requisition will be incremented.
+ *
+ * If a requisition is specified and there are multiple active applications on the profile, you will receive an error. If the specific requisition is closed, you will receive an error. If there is an offer extended, it must be signed, and the offer must be associated with an application for a posting linked to the provided requisition. You can hire a candidate against a requisition without an offer.
+ */
 export declare const updateOpportunityArchivedState: (apiKey: string, data: {
     params: UpdateOpportunityArchivedStateParams;
-    query?: {} | undefined;
+} & {
     body?: UpdateOpportunityArchivedStateBody | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
 export type AddOpportunityContactLinksParams = {
     opportunity: string;
 };
@@ -761,16 +809,16 @@ export type AddOpportunityContactLinksBody = {
 };
 export declare const addContactLinksByOpportunity: (apiKey: string, data: {
     params: AddOpportunityContactLinksParams;
-    query?: {} | undefined;
+} & {
     body?: AddOpportunityContactLinksBody | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
 export type RemoveOpportunityContactLinksParams = AddOpportunityContactLinksParams;
 export type RemoveOpportunityContactLinksBody = AddOpportunityContactLinksBody;
 export declare const removeContactLinksByOpportunity: (apiKey: string, data: {
     params: AddOpportunityContactLinksParams;
-    query?: {} | undefined;
+} & {
     body?: AddOpportunityContactLinksBody | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
 export type AddOpportunityTagsParams = {
     opportunity: string;
 };
@@ -779,16 +827,16 @@ export type AddOpportunityTagsBody = {
 };
 export declare const addOpportunityTags: (apiKey: string, data: {
     params: AddOpportunityTagsParams;
-    query?: {} | undefined;
+} & {
     body?: AddOpportunityTagsBody | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
 export type RemoveOpportunityTagsParams = AddOpportunityTagsParams;
 export type RemoveOpportunityTagsBody = AddOpportunityTagsBody;
 export declare const removeOpportunityTags: (apiKey: string, data: {
     params: AddOpportunityTagsParams;
-    query?: {} | undefined;
+} & {
     body?: AddOpportunityTagsBody | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
 export type AddOpportunitySourcesParams = {
     opportunity: string;
 };
@@ -797,31 +845,23 @@ export type AddOpportunitySourcesBody = {
 };
 export declare const addOpportunitySources: (apiKey: string, data: {
     params: AddOpportunitySourcesParams;
-    query?: {} | undefined;
+} & {
     body?: AddOpportunitySourcesBody | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
 export type RemoveOpportunitySourcesParams = AddOpportunitySourcesParams;
 export type RemoveOpportunitySourcesBody = AddOpportunitySourcesBody;
 export declare const removeOpportunitySources: (apiKey: string, data: {
     params: AddOpportunitySourcesParams;
-    query?: {} | undefined;
+} & {
     body?: AddOpportunitySourcesBody | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
 export type GetStageParams = {
     stage: string;
 };
+export type GetStageResponse = Response<Stage>;
 export declare const getStage: (apiKey: string, data: {
     params: GetStageParams;
-    query?: {} | undefined;
-    body?: {} | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
-export declare const getStages: (apiKey: string, data: {
-    params: {};
-    query?: {} | undefined;
-    body?: {} | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
-export declare const getTags: (apiKey: string, data: {
-    params: {};
-    query?: {} | undefined;
-    body?: {} | undefined;
-}, init?: Omit<RequestInit, "body" | "method">) => Promise<{}>;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<GetStageResponse>;
+export type GetStagesResponse = ListResponse<Stage>;
+export declare const getStages: (apiKey: string, data: {}, init?: Omit<RequestInit, "body" | "method">) => Promise<GetStagesResponse>;
+export declare const getTags: (apiKey: string, data: {}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
