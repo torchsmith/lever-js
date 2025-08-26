@@ -26,8 +26,8 @@ interface Endpoint<P, Q, B, R> {
 		data: (P extends null
 			? {}
 			: {
-					params: P;
-				}) &
+				params: P;
+			}) &
 			(B extends null ? {} : { body?: B }) &
 			(Q extends null ? {} : { query?: Q }),
 		init?: Omit<RequestInit, 'body' | 'method'>
@@ -492,14 +492,14 @@ export interface Stage {
 
 export type ListResponse<T> =
 	| {
-			data: T[];
-			hasNext: false;
-	  }
+		data: T[];
+		hasNext: false;
+	}
 	| {
-			data: T[];
-			hasNext: true;
-			next: string;
-	  };
+		data: T[];
+		hasNext: true;
+		next: string;
+	};
 export type ListQuery = {
 	limit?: number;
 	offset?: number;
@@ -635,7 +635,7 @@ export const retrieveInterview = createEndpoint<
 	RetrieveInterviewResponse
 >({
 	method: 'GET',
-	path: '/opportunities/:opportunity/interview/:interview',
+	path: '/opportunities/:opportunity/interviews/:interview',
 });
 
 export type ListInterviewsParams = {
@@ -947,12 +947,12 @@ export type CreateOpportunityBody = {
 
 	/** How this Opportunity was added to Lever */
 	origin:
-		| 'agency'
-		| 'applied'
-		| 'internal'
-		| 'referred'
-		| 'sourced'
-		| 'university';
+	| 'agency'
+	| 'applied'
+	| 'internal'
+	| 'referred'
+	| 'sourced'
+	| 'university';
 
 	/**
 	 * UID of the user who owns this Opportunity.

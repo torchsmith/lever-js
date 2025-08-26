@@ -65,7 +65,7 @@ export const retrievePosting = createEndpoint({
 });
 export const retrieveInterview = createEndpoint({
     method: 'GET',
-    path: '/opportunities/:opportunity/interview/:interview',
+    path: '/opportunities/:opportunity/interviews/:interview',
 });
 export const listInterviews = createEndpoint({
     method: 'GET',
