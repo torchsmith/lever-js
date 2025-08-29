@@ -389,8 +389,8 @@ export type ListResponse<T> = {
     next: string;
 };
 export type ListQuery = {
-    limit?: number;
-    offset?: number;
+    limit?: number | string;
+    offset?: string;
     expand?: string;
 };
 export type Response<T> = {
