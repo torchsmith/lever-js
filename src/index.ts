@@ -1197,7 +1197,11 @@ export const getArchiveReason = createEndpoint<GetArchiveReasonParams, null, nul
 
 export type GetArchiveReasonsResponse = ListResponse<ArchiveReason>;
 
-export const getArchiveReasons = createEndpoint<null, null, null, GetArchiveReasonsResponse>({
+export type GetArchiveReasonsQuery = {
+	type?: 'hired' | 'non-hired';
+};
+
+export const getArchiveReasons = createEndpoint<null, GetArchiveReasonsQuery, null, GetArchiveReasonsResponse>({
 	method: 'GET',
 	path: '/archive_reasons',
 });

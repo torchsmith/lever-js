@@ -873,4 +873,9 @@ export declare const getArchiveReason: (apiKey: string, data: {
     params: GetArchiveReasonParams;
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<GetArchiveReasonResponse>;
 export type GetArchiveReasonsResponse = ListResponse<ArchiveReason>;
-export declare const getArchiveReasons: (apiKey: string, data: {}, init?: Omit<RequestInit, "body" | "method">) => Promise<GetArchiveReasonsResponse>;
+export type GetArchiveReasonsQuery = {
+    type?: 'hired' | 'non-hired';
+};
+export declare const getArchiveReasons: (apiKey: string, data: {
+    query?: GetArchiveReasonsQuery | undefined;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<GetArchiveReasonsResponse>;
