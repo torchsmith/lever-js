@@ -1182,3 +1182,22 @@ export const getTags = createEndpoint<null, null, null, null>({
 	method: 'GET',
 	path: '/tags',
 });
+
+
+export type GetArchiveReasonParams = {
+	archiveReason: string;
+};
+
+export type GetArchiveReasonResponse = Response<ArchiveReason>;
+
+export const getArchiveReason = createEndpoint<GetArchiveReasonParams, null, null, GetArchiveReasonResponse>({
+	method: 'GET',
+	path: '/archive_reasons',
+});
+
+export type GetArchiveReasonsResponse = ListResponse<ArchiveReason>;
+
+export const getArchiveReasons = createEndpoint<null, null, null, GetArchiveReasonsResponse>({
+	method: 'GET',
+	path: '/archive_reasons',
+});

@@ -171,4 +171,12 @@ export const getTags = createEndpoint({
     method: 'GET',
     path: '/tags',
 });
+export const getArchiveReason = createEndpoint({
+    method: 'GET',
+    path: '/archive_reasons',
+});
+export const getArchiveReasons = createEndpoint({
+    method: 'GET',
+    path: '/archive_reasons',
+});
 //# sourceMappingURL=index.js.map

@@ -865,3 +865,12 @@ export declare const getStage: (apiKey: string, data: {
 export type GetStagesResponse = ListResponse<Stage>;
 export declare const getStages: (apiKey: string, data: {}, init?: Omit<RequestInit, "body" | "method">) => Promise<GetStagesResponse>;
 export declare const getTags: (apiKey: string, data: {}, init?: Omit<RequestInit, "body" | "method">) => Promise<null>;
+export type GetArchiveReasonParams = {
+    archiveReason: string;
+};
+export type GetArchiveReasonResponse = Response<ArchiveReason>;
+export declare const getArchiveReason: (apiKey: string, data: {
+    params: GetArchiveReasonParams;
+}, init?: Omit<RequestInit, "body" | "method">) => Promise<GetArchiveReasonResponse>;
+export type GetArchiveReasonsResponse = ListResponse<ArchiveReason>;
+export declare const getArchiveReasons: (apiKey: string, data: {}, init?: Omit<RequestInit, "body" | "method">) => Promise<GetArchiveReasonsResponse>;
