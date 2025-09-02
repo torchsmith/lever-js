@@ -26,8 +26,8 @@ interface Endpoint<P, Q, B, R> {
 		data: (P extends null
 			? {}
 			: {
-				params: P;
-			}) &
+					params: P;
+				}) &
 			(B extends null ? {} : { body?: B }) &
 			(Q extends null ? {} : { query?: Q }),
 		init?: Omit<RequestInit, 'body' | 'method'>
@@ -485,6 +485,49 @@ export interface Posting {
 	workplaceType: string;
 }
 
+export interface User {
+	/** Unique ID for the user */
+	id: string;
+
+	/** User's preferred name */
+	name: string;
+
+	/** Username, typically from email prefix */
+	username: string;
+
+	/** User's email address */
+	email: string;
+
+	/** Epoch timestamp when user was created */
+	createdAt: number;
+
+	/** Epoch timestamp when user was deactivated, or null if active */
+	deactivatedAt: number | null;
+
+	/** User's access role */
+	accessRole:
+		| 'super admin'
+		| 'admin'
+		| 'team member'
+		| 'limited team member'
+		| 'interviewer';
+
+	/** URL to user's gravatar image, if enabled */
+	photo: string;
+
+	/** Optional: Unique ID from external HR directory */
+	externalDirectoryId?: string;
+
+	/** Optional: Array of linked contact IDs */
+	linkedContactIds?: string[];
+
+	/** Optional: User's job title */
+	jobTitle?: string;
+
+	/** Optional: User's manager ID */
+	managerId?: string;
+}
+
 export interface Stage {
 	id: string;
 	text: string;
@@ -492,14 +535,14 @@ export interface Stage {
 
 export type ListResponse<T> =
 	| {
-		data: T[];
-		hasNext: false;
-	}
+			data: T[];
+			hasNext: false;
+	  }
 	| {
-		data: T[];
-		hasNext: true;
-		next: string;
-	};
+			data: T[];
+			hasNext: true;
+			next: string;
+	  };
 export type ListQuery = {
 	limit?: number | string;
 	offset?: string;
@@ -856,7 +899,13 @@ export const retrieveOpportunity = createEndpoint<
 
 export type ListOpportunitiesQuery = ListQuery & {
 	include?: string;
-	expand?: string;
+	expand?:
+		| 'applications'
+		| 'stage'
+		| 'owner'
+		| 'followers'
+		| 'sourcedBy'
+		| 'contact';
 	tag?: string;
 	email?: string;
 	origin?: string;
@@ -947,12 +996,12 @@ export type CreateOpportunityBody = {
 
 	/** How this Opportunity was added to Lever */
 	origin:
-	| 'agency'
-	| 'applied'
-	| 'internal'
-	| 'referred'
-	| 'sourced'
-	| 'university';
+		| 'agency'
+		| 'applied'
+		| 'internal'
+		| 'referred'
+		| 'sourced'
+		| 'university';
 
 	/**
 	 * UID of the user who owns this Opportunity.
@@ -1183,14 +1232,18 @@ export const getTags = createEndpoint<null, null, null, null>({
 	path: '/tags',
 });
 
-
 export type GetArchiveReasonParams = {
 	archiveReason: string;
 };
 
 export type GetArchiveReasonResponse = Response<ArchiveReason>;
 
-export const getArchiveReason = createEndpoint<GetArchiveReasonParams, null, null, GetArchiveReasonResponse>({
+export const getArchiveReason = createEndpoint<
+	GetArchiveReasonParams,
+	null,
+	null,
+	GetArchiveReasonResponse
+>({
 	method: 'GET',
 	path: '/archive_reasons',
 });
@@ -1201,7 +1254,12 @@ export type GetArchiveReasonsQuery = {
 	type?: 'hired' | 'non-hired';
 };
 
-export const getArchiveReasons = createEndpoint<null, GetArchiveReasonsQuery, null, GetArchiveReasonsResponse>({
+export const getArchiveReasons = createEndpoint<
+	null,
+	GetArchiveReasonsQuery,
+	null,
+	GetArchiveReasonsResponse
+>({
 	method: 'GET',
 	path: '/archive_reasons',
 });

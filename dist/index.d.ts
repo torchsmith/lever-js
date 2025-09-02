@@ -376,6 +376,32 @@ export interface Posting {
     };
     workplaceType: string;
 }
+export interface User {
+    /** Unique ID for the user */
+    id: string;
+    /** User's preferred name */
+    name: string;
+    /** Username, typically from email prefix */
+    username: string;
+    /** User's email address */
+    email: string;
+    /** Epoch timestamp when user was created */
+    createdAt: number;
+    /** Epoch timestamp when user was deactivated, or null if active */
+    deactivatedAt: number | null;
+    /** User's access role */
+    accessRole: 'super admin' | 'admin' | 'team member' | 'limited team member' | 'interviewer';
+    /** URL to user's gravatar image, if enabled */
+    photo: string;
+    /** Optional: Unique ID from external HR directory */
+    externalDirectoryId?: string;
+    /** Optional: Array of linked contact IDs */
+    linkedContactIds?: string[];
+    /** Optional: User's job title */
+    jobTitle?: string;
+    /** Optional: User's manager ID */
+    managerId?: string;
+}
 export interface Stage {
     id: string;
     text: string;
@@ -659,7 +685,7 @@ export declare const retrieveOpportunity: (apiKey: string, data: {
 }, init?: Omit<RequestInit, "body" | "method">) => Promise<RetrieveOpportunityResponse>;
 export type ListOpportunitiesQuery = ListQuery & {
     include?: string;
-    expand?: string;
+    expand?: 'applications' | 'stage' | 'owner' | 'followers' | 'sourcedBy' | 'contact';
     tag?: string;
     email?: string;
     origin?: string;
